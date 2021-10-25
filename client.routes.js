@@ -1,3 +1,4 @@
+
 module.exports = app => {
     const clients = require("./client.controller.js");
 
@@ -7,4 +8,5 @@ module.exports = app => {
     app.put("/clients/:clientId", clients.update);
     app.delete("/clients/:clientId", clients.delete);
     app.delete("/clients", clients.deleteAll);
+    app.post("/submit", clients.submit);
 };

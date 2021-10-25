@@ -2,6 +2,7 @@
 const sql = require("./models/db.js");
 
 const Client = function(client) {
+    this.id = client.id;
     this.first_name = client.first_name;
     this.last_name = client.last_name;
     this.email = client.email;
@@ -29,7 +30,7 @@ Client.findById = (clientId, result) => {
         }
 
         if (res.length) {
-            console.log("found client: ", res[0]);
+            //console.log("found client: ", res[0]);
             result(null, res[0]);
             return;
         }
@@ -46,7 +47,7 @@ Client.getAll = result => {
             return;
         }
 
-        console.log("clients: ", res);
+//        console.log("clients: ", res);
         result(null, res);
     });
 };

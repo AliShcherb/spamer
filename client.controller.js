@@ -1,6 +1,19 @@
 
  const Client = require("./clients.model.js");
+ const nodemailer = require("nodemailer");
 
+
+
+ let transporter = nodemailer.createTransport({
+     host: 'smtp.gmail.com',
+     port: 587,
+     secure: false,
+     requireTLS: true,
+     auth: {
+         user: 'sushko.liza10@gmail.com',
+         pass: 'alina_17112001'
+     }
+ });
 
 exports.create = (req, res) => {
     if (!req.body) {
@@ -106,3 +119,29 @@ exports.deleteAll = (req, res) => {
     });
 };
 
+exports.submit = (req, res) => {
+
+    let params = req.body;
+    let message = params.message;
+    delete params.message;
+    for(let emailid in params) {
+        let user_id = emailid.substr(6,emailid.length - 7);
+        Client.findById(user_id, (err, userData) => {
+
+            let mailOptions = {
+                from: 'sushko.liza10@gmail.com',
+                to: userData.email,
+                subject: 'Test',
+                text: message
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    return console.log("error: " + error.message);
+                }
+                console.log('success');
+            });
+        });
+    }
+    res.send({ message: `Successful sending email to all clients` });
+}

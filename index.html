@@ -1,34 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="./index.js"></script>
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <title>Spamer</title>
+    <title>Spammer</title>
 </head>
-<body onload="loadTable()">
+<body onload="loadTable();sortTable(1);">
 <div class="container">
+    <form action="http://localhost:3000/submit" method="POST">
     <div class="row">
         <div class="col">
-            <table class="table table-striped">
+            <div class="row buttons">
+            <button class="add-button" onclick="openForm()">Add</button>
+                </div>
+            <table class="table table-striped" data-toggle="table">
                 <thead>
                 <tr>
-                    <th>First name</th>
-                    <th>Last name</th>
-                    <th>Email</th>
+                    <th onclick="sortNumber()">ID</th>
+                    <th onclick="sortTable(1)">First name</th>
+                    <th onclick="sortTable(2)">Last name</th>
+                    <th onclick="sortTable(3)">Email</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody id="info-table">
                 </tbody>
             </table>
         </div>
-        <div class="col">
+        <div class="col two">
             <div class="md-form amber-textarea active-amber-textarea">
                 <i class="fas fa-pencil-alt prefix"></i>
-                <textarea id="form22" class="md-textarea form-control" rows="3"></textarea>
-                <label for="form22">Material textarea with a colorful prefix on :focus state</label>
+                <textarea id="form22" class="md-textarea form-control" rows="3" placeholder="Input your message" name="message"></textarea>
+                <ul class="list-group">
+                    <li class="list-group-item">You won a million dollars!</li>
+                    <li class="list-group-item">You are enrolled at Harvard!</li>
+                    <li class="list-group-item">Happy New Year!</li>
+                    <li class="list-group-item">Happy B-day!</li>
+                </ul>
             </div>
+            <button type="submit" class="send-button" onclick="success()">Send</button>
+            <span id="success">Success!</span>
         </div>
+    </div>
+    </form>
+</div>
+<div class="form-popup" id="myForm">
+    <div class="bg" id="closePopup"></div>
+    <div class="content">
+        <form action="#" class="form-container">
+            <input type="hidden" name="id" placeholder="ID" id="currentId" value="">
+            <input type="text" id="fn" placeholder="First name" name="first_name" required>
+            <input type="text" id="ln" placeholder="Last name" name="last_name" required>
+            <input type="text" id="em" placeholder="Email" name="email" required>
+            <button type="submit" class="btn">Submit</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+        </form>
     </div>
 </div>
 <script>
@@ -38,49 +66,248 @@
                 if (this.readyState === 4 && this.status === 200) {
                     var data = this.responseText;
                     var jsonResponse = JSON.parse(data);
-                    // console.log(jsonResponse["presidents"]);
                     var table = document.getElementById('info-table');
                     table.setAttribute('class', 'history');
 
-                    let properties = ['first_name', 'last_name', 'email']; // changed this
+                    let properties = ['id', 'first_name', 'last_name', 'email']; // changed this
 
                     for (var r = 0; r < jsonResponse.length; r++) { // changed this
                         let tr = document.createElement('tr');
                         let row = jsonResponse[r]; // changed this
-                        for (var i = 0; i < properties.length; i++) {
-                            var td = document.createElement('td');
+                        for (let i = 0; i < properties.length; i++) {
+                            let td = document.createElement('td');
                             td.appendChild(document.createTextNode(row[properties[i]]));
                             tr.appendChild(td);
                         }
+                        let tdcheckbox = document.createElement('td');
+                        tdcheckbox.innerHTML = '<input type=\'checkbox\' name=\'email[' + row[properties[0]] + ']\' value=\'true\' /><button type="button" onclick="openFormUpdate('+ "'" +  row[properties[0]]+ "'" + ', '+ "'" +  row[properties[1]]+ "'" + ', '+ "'" +  row[properties[2]]+ "'" + ', '+ "'" +  row[properties[3]]+ "'" + ')">EDIT</button><button type="button" onclick="deleteItem('+ "'" +  row[properties[0]]+ "'" + ')">DELETE</button>';
+                        tr.appendChild(tdcheckbox);
+
 
                         table.appendChild(tr);
                     }
                 }
             };
         let url = "http://localhost:3000/clients";
-      //  alert(url);
 
         xhttp.open("GET", url, false);
         xhttp.send();
-    }
-    /*function sort(index, inputname) {
-        var phrase = document.getElementById(inputname);
-        var table = document.getElementById('info-table');
-        var regPhrase = new RegExp(phrase.value, 'i');
-        var flag = false;
-        for (var i = 1; i < table.rows.length; i++) {
-            flag = false;
-            for (var j = table.rows[i].cells.length - 1; j >= 0; j--) {
-                flag = regPhrase.test(table.rows[i].cells[index].innerHTML);
-                if (flag) break;
-            }
-            if (flag) {
-                table.rows[i].style.display = "";
-            } else {
-                table.rows[i].style.display = "none";
-            }
 
-        }*/
+    }
+
+    function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("info-table");
+        switching = true;
+        dir = "asc";
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 0; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("td")[n];
+                y = rows[i + 1].getElementsByTagName("td")[n];
+                if (dir == "asc") {
+                    if ((Number(x.innerHTML) > Number(y.innerHTML)) || (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase())) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == "desc") {
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount ++;
+            } else {
+                if (switchcount == 0 && dir == "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+        document.querySelectorAll('th').forEach(function (elem, index) {
+            if (index === n) {
+                elem.className = (dir === "desc" ? 'headerSortDown' : 'headerSortUp');
+            }
+        });
+    }
+
+    function sortNumber() {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("info-table");
+        switching = true;
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 0; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("td")[0];
+                y = rows[i + 1].getElementsByTagName("td")[0];
+                if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    }
+
+    document.onreadystatechange = function () {
+        if (document.readyState === "complete") {
+            document.querySelectorAll(".list-group-item").forEach(function (element) {
+                element.onclick = function () {
+                    document.getElementById("form22").innerText = this.innerText;
+                }
+            });
+        }
+    }
+    var serializeForm = function (form) {
+        var obj = {};
+        console.log(obj);
+        var formData = new FormData(form);
+        for (var key of formData.keys()) {
+            obj[key] = formData.get(key);
+        }
+        return obj;
+    };
+    document.forms[0].addEventListener('submit', function (event) {
+
+        event.preventDefault();
+
+        fetch('http://localhost:3000/submit', {
+            method: 'POST',
+            body: JSON.stringify(serializeForm(document.forms[0])),
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8'
+            }
+        }).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            }
+            return Promise.reject(response);
+        }).then(function (data) {
+            console.log(data);
+        }).catch(function (error) {
+            console.warn(error);
+        });
+
+        return false;
+    });
+
+    document.forms[1].addEventListener('submit', function (event) {
+
+        event.preventDefault();
+
+        let user_id = document.getElementById("currentId").value;
+
+        if (user_id === '') {
+            fetch('http://localhost:3000/clients', {
+                method: 'POST',
+                body: JSON.stringify(serializeForm(document.forms[1])),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8'
+                }
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                }
+                return Promise.reject(response);
+            }).then(function (data) {
+                console.log(data);
+            }).catch(function (error) {
+                console.warn(error);
+            });
+        } else {
+            fetch('http://localhost:3000/clients/' + user_id, {
+                method: 'PUT',
+                body: JSON.stringify(serializeForm(document.forms[1])),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8'
+                }
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                }
+                return Promise.reject(response);
+            }).then(function (data) {
+                console.log(data);
+            }).catch(function (error) {
+                console.warn(error);
+            });
+        }
+
+        return false;
+    });
+
+    function openFormUpdate(id, fname, lname, email) {
+        document.forms[1].reset();
+        document.getElementById("currentId").value = id;
+
+
+
+        document.getElementById("fn").value = fname;
+        document.getElementById("ln").value = lname;
+        document.getElementById("em").value = email;
+
+
+        document.getElementById("myForm").style.display = "flex";
+    }
+
+    function deleteItem(id) {
+        document.forms[1].reset();
+
+
+        if (confirm("Really delete: "+ id + "?")) {
+            alert("DELETING ID: " + id);
+            fetch('http://localhost:3000/clients/' + id, {
+                method: 'DELETE',
+                body: JSON.stringify(serializeForm(document.forms[1])),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8'
+                }
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                }
+                return Promise.reject(response);
+            }).then(function (data) {
+                console.log(data);
+            }).catch(function (error) {
+                console.warn(error);
+            });
+        } else {
+            alert("not delete");
+        }
+
+
+    }
+
+    function openForm() {
+        document.forms[1].reset();
+        document.getElementById("currentId").value = '';
+        document.getElementById("myForm").style.display = "flex";
+    }
+
+    function closeForm() {
+        document.getElementById("myForm").style.display = "none";
+    }
+
+    function success() {
+        document.getElementById("success").style.display = "flex";
+    }
+
+
+    document.getElementById("closePopup").onclick = function () {
+        document.getElementById("myForm").style.display = "none";
+    }
 
 </script>
 </body>
