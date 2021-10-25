@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="./index.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>Spamer</title>
+</head>
+<body onload="loadTable()">
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>Email</th>
+                </tr>
+                </thead>
+                <tbody id="info-table">
+                </tbody>
+            </table>
+        </div>
+        <div class="col">
+            <div class="md-form amber-textarea active-amber-textarea">
+                <i class="fas fa-pencil-alt prefix"></i>
+                <textarea id="form22" class="md-textarea form-control" rows="3"></textarea>
+                <label for="form22">Material textarea with a colorful prefix on :focus state</label>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function loadTable() {
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    var data = this.responseText;
+                    var jsonResponse = JSON.parse(data);
+                    // console.log(jsonResponse["presidents"]);
+                    var table = document.getElementById('info-table');
+                    table.setAttribute('class', 'history');
+
+                    let properties = ['first_name', 'last_name', 'email']; // changed this
+
+                    for (var r = 0; r < jsonResponse.length; r++) { // changed this
+                        let tr = document.createElement('tr');
+                        let row = jsonResponse[r]; // changed this
+                        for (var i = 0; i < properties.length; i++) {
+                            var td = document.createElement('td');
+                            td.appendChild(document.createTextNode(row[properties[i]]));
+                            tr.appendChild(td);
+                        }
+
+                        table.appendChild(tr);
+                    }
+                }
+            };
+        let url = "http://localhost:3000/clients";
+      //  alert(url);
+
+        xhttp.open("GET", url, false);
+        xhttp.send();
+    }
+    /*function sort(index, inputname) {
+        var phrase = document.getElementById(inputname);
+        var table = document.getElementById('info-table');
+        var regPhrase = new RegExp(phrase.value, 'i');
+        var flag = false;
+        for (var i = 1; i < table.rows.length; i++) {
+            flag = false;
+            for (var j = table.rows[i].cells.length - 1; j >= 0; j--) {
+                flag = regPhrase.test(table.rows[i].cells[index].innerHTML);
+                if (flag) break;
+            }
+            if (flag) {
+                table.rows[i].style.display = "";
+            } else {
+                table.rows[i].style.display = "none";
+            }
+
+        }*/
+
+</script>
+</body>
+</html>
